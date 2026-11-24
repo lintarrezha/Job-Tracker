@@ -1,178 +1,1045 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#eef1ee">
 <title>Job Tracker</title>
+
 <style>
-:root{--bg:#eef1ee;--card:#fff;--ink:#1c2a29;--mute:#667572;--line:#d5ddd9;--acc:#0e6b62;--accInk:#fff;--warn:#b4492b}
-@media(prefers-color-scheme:dark){:root{--bg:#121918;--card:#1b2524;--ink:#e6eeeb;--mute:#93a39f;--line:#2e3b39;--acc:#46b3a6;--accInk:#08201d;--warn:#e8876a}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom))}
-main{max-width:640px;margin:0 auto;padding:16px}
-h1{font-size:1.35rem;margin:4px 0 14px}
-label{display:block;font-size:.85rem;color:var(--mute);margin:12px 0 4px}
-input,select,textarea,button{font:inherit;color:inherit}
-input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn{border:0;border-radius:8px;padding:12px 16px;background:var(--acc);color:var(--accInk);font-weight:600;width:100%;margin-top:18px}
-.btn.ghost{background:transparent;color:var(--acc);border:1px solid var(--acc);margin-top:8px}
-.btn:disabled{opacity:.5}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;padding:14px;background:none;border:0;color:var(--mute);font-weight:600}
-nav button.on{color:var(--acc);box-shadow:inset 0 2px var(--acc)}
-.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
-.item h3{margin:0;font-size:1rem}
-.meta{color:var(--mute);font-size:.85rem}
-.chip{display:inline-block;font-size:.78rem;padding:2px 9px;border:1px solid var(--line);border-radius:99px;margin:6px 6px 0 0}
-.acts{display:flex;gap:14px;margin-top:8px}
-.acts a,.acts button{background:none;border:0;padding:0;color:var(--acc);font-size:.9rem;text-decoration:underline}
-.edit{border-top:1px dashed var(--line);margin-top:10px;padding-top:2px}
-#msg{position:fixed;left:16px;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);padding:11px 14px;border-radius:8px;display:none;max-width:608px;margin:auto}
-.empty{text-align:center;color:var(--mute);padding:40px 0}
-.hide{display:none}
+:root {
+  --bg: #eef1ee;
+  --card: #ffffff;
+  --ink: #1c2a29;
+  --mute: #667572;
+  --line: #d5ddd9;
+  --acc: #0e6b62;
+  --accInk: #ffffff;
+  --warn: #b4492b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121918;
+    --card: #1b2524;
+    --ink: #e6eeeb;
+    --mute: #93a39f;
+    --line: #2e3b39;
+    --acc: #46b3a6;
+    --accInk: #08201d;
+    --warn: #e8876a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.45 system-ui, -apple-system, sans-serif;
+  padding: env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom));
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 1.35rem;
+  margin: 4px 0 14px;
+}
+
+label {
+  display: block;
+  font-size: .85rem;
+  color: var(--mute);
+  margin: 12px 0 4px;
+}
+
+input, select, textarea, button {
+  font: inherit;
+  color: inherit;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+}
+
+textarea {
+  resize: vertical;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: var(--acc);
+  color: var(--accInk);
+  font-weight: 600;
+  width: 100%;
+  margin-top: 18px;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+nav button {
+  flex: 1;
+  padding: 14px;
+  background: none;
+  border: 0;
+  color: var(--mute);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+nav button.on {
+  color: var(--acc);
+  box-shadow: inset 0 2px var(--acc);
+}
+
+.item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.item h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.meta {
+  color: var(--mute);
+  font-size: .85rem;
+  margin-top: 4px;
+}
+
+.chip {
+  display: inline-block;
+  font-size: .78rem;
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  margin: 6px 6px 0 0;
+}
+
+.acts {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.acts a,
+.acts button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--acc);
+  font-size: .9rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.edit {
+  border-top: 1px dashed var(--line);
+  margin-top: 10px;
+  padding-top: 2px;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.check-row input {
+  width: auto;
+}
+
+.check-row label {
+  margin: 0;
+}
+
+#msg {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  background: var(--ink);
+  color: var(--bg);
+  padding: 11px 14px;
+  border-radius: 8px;
+  display: none;
+  max-width: 608px;
+  margin: auto;
+  z-index: 10;
+}
+
+.empty {
+  text-align: center;
+  color: var(--mute);
+  padding: 40px 0;
+}
+
+.hide {
+  display: none !important;
+}
+
+@media (max-width: 420px) {
+  main {
+    padding: 14px;
+  }
+
+  .row {
+    gap: 8px;
+  }
+
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <main>
+
+<!-- FORM TAMBAH LAMARAN -->
 <section id="v-add">
+
   <h1>Catat lowongan</h1>
-  <label>Link</label><input id="Link" type="url" inputmode="url" placeholder="https://...">
-  <div class="row"><div><label>Perusahaan</label><input id="Perusahaan"></div><div><label>Posisi</label><input id="Posisi"></div></div>
-  <div class="row"><div><label>Lokasi</label><input id="Lokasi"></div><div><label>Tanggal</label><input id="Tanggal" type="date"></div></div>
-  <div class="row"><div><label>Platform</label><select id="Platform"></select></div><div><label>Job Type</label><select id="Job Type"></select></div></div>
-  <div class="row"><div><label>Interest In Role</label><select id="Interest In Role"></select></div><div><label>Status</label><select id="Status"></select></div></div>
-  <label>Salary (angka, opsional)</label><input id="Salary" type="number" inputmode="numeric">
-  <label>Notes</label><textarea id="Notes" rows="2"></textarea>
+
+  <label>Link lowongan</label>
+  <input id="Link" type="url" inputmode="url" placeholder="https://...">
+
+  <div class="row">
+    <div>
+      <label>Perusahaan</label>
+      <input id="Perusahaan" placeholder="Nama perusahaan">
+    </div>
+
+    <div>
+      <label>Posisi</label>
+      <input id="Posisi" placeholder="Posisi pekerjaan">
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Lokasi</label>
+      <input id="Lokasi" placeholder="Contoh: Bali">
+    </div>
+
+    <div>
+      <label>Tanggal</label>
+      <input id="Tanggal" type="date">
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Platform</label>
+      <select id="Platform"></select>
+    </div>
+
+    <div>
+      <label>Job Type</label>
+      <select id="Job Type"></select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Interest In Role</label>
+      <select id="Interest In Role"></select>
+    </div>
+
+    <div>
+      <label>Status</label>
+      <select id="Status"></select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Tahap</label>
+      <select id="Tahap"></select>
+    </div>
+
+    <div>
+      <label>Follow Up Via</label>
+      <select id="Follow Up Via"></select>
+    </div>
+  </div>
+
+  <label>Salary (angka, opsional)</label>
+  <input id="Salary" type="number" inputmode="numeric" placeholder="Contoh: 5000000">
+
+  <label>Notes</label>
+  <textarea id="Notes" rows="2" placeholder="Catatan tambahan..."></textarea>
+
   <button class="btn" id="save">Simpan ke spreadsheet</button>
+
 </section>
 
+
+<!-- DAFTAR LAMARAN -->
 <section id="v-list" class="hide">
+
   <h1>Daftar lamaran</h1>
-  <div class="row"><input id="q" type="search" placeholder="Cari perusahaan atau posisi"><select id="fs"></select></div>
+
+  <div class="row">
+    <input id="q" type="search" placeholder="Cari perusahaan atau posisi">
+    <select id="fs"></select>
+  </div>
+
   <div id="items" style="margin-top:14px"></div>
+
 </section>
+
 </main>
+
 <div id="msg"></div>
-<nav><button id="t-add" class="on">Tambah</button><button id="t-list">Daftar</button></nav>
+
+<nav>
+  <button id="t-add" class="on">Tambah</button>
+  <button id="t-list">Daftar</button>
+</nav>
+
 
 <script>
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let PIN = localStorage.getItem('pin') || '', OPT = {}, ROWS = [], loaded = false;
+const $ = selector => document.querySelector(selector);
 
-function toast(t) { const m = $('#msg'); m.textContent = t; m.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(() => m.style.display = 'none', 3500); }
+const esc = value =>
+  String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
 
-async function api(action, extra = {}) {
-  const r = await fetch('/api/sheet', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-pin': PIN }, body: JSON.stringify({ action, ...extra }) });
-  if (r.status === 401) {
-    PIN = prompt('Masukkan PIN') || '';
-    if (!PIN) throw new Error('PIN diperlukan');
-    localStorage.setItem('pin', PIN);
-    return api(action, extra);
+let PIN = localStorage.getItem('pin') || '';
+let OPT = {};
+let ROWS = [];
+let loaded = false;
+
+
+// ======================================
+// UTILITIES
+// ======================================
+
+function localDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function toast(message) {
+  const element = $('#msg');
+
+  element.textContent = message;
+  element.style.display = 'block';
+
+  clearTimeout(toast.timer);
+
+  toast.timer = setTimeout(() => {
+    element.style.display = 'none';
+  }, 3500);
+}
+
+function fill(element, options, placeholder = '') {
+  element.innerHTML =
+    `<option value="">${esc(placeholder)}</option>` +
+    options.map(value =>
+      `<option value="${esc(value)}">${esc(value)}</option>`
+    ).join('');
+}
+
+function formatDate(value) {
+  if (!value) return '';
+
+  const parts = String(value).split('-');
+
+  if (parts.length !== 3) return value;
+
+  const date = new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2])
+  );
+
+  return date.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
+function safeUrl(value) {
+  const url = String(value || '').trim();
+
+  if (!url) return '';
+
+  const normalized = /^https?:\/\//i.test(url)
+    ? url
+    : 'https://' + url;
+
+  try {
+    const parsed = new URL(normalized);
+
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      return '';
+    }
+
+    return parsed.href;
+  } catch {
+    return '';
   }
-  const j = await r.json();
-  if (!j.ok && !j.duplicate) throw new Error(j.error || 'Terjadi kesalahan');
-  return j;
 }
 
-function fill(el, list, blank) {
-  el.innerHTML = (blank ? '<option value="">' + blank + '</option>' : '') + list.map(x => `<option>${esc(x)}</option>`).join('');
+
+// ======================================
+// API CONNECTION
+// ======================================
+
+async function api(action, extra = {}, retry = true) {
+
+  const response = await fetch('/api/sheet', {
+    method: 'POST',
+
+    headers: {
+      'Content-Type': 'application/json',
+      'x-pin': PIN
+    },
+
+    body: JSON.stringify({
+      action,
+      ...extra
+    })
+  });
+
+  if (response.status === 401) {
+
+    if (!retry) {
+      throw new Error('PIN salah. Silakan coba kembali.');
+    }
+
+    const enteredPin = prompt('Masukkan PIN Job Tracker');
+
+    if (!enteredPin) {
+      throw new Error('PIN diperlukan');
+    }
+
+    PIN = enteredPin;
+    localStorage.setItem('pin', PIN);
+
+    return api(action, extra, false);
+  }
+
+  let result;
+
+  try {
+    result = await response.json();
+  } catch {
+    throw new Error('Respons server tidak dapat dibaca');
+  }
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Terjadi kesalahan pada server');
+  }
+
+  if (!result.ok && !result.duplicate) {
+    throw new Error(result.error || 'Terjadi kesalahan');
+  }
+
+  return result;
 }
 
-function guessPlatform(url) {
-  const map = { linkedin: 'linkedin', glints: 'glints', jobstreet: 'jobstreet', kalibrr: 'kalibrr', talentics: 'talentics', instagram: 'intagram' };
-  const host = (url.match(/^https?:\/\/([^/]+)/i) || [])[1] || '';
-  const key = Object.keys(map).find(k => host.includes(k));
-  const want = key ? map[key] : 'web perusahaan';
-  const opt = (OPT['Platform'] || []).find(o => o.toLowerCase().includes(want));
-  if (opt) $('#Platform').value = opt;
+
+// ======================================
+// DETECT PLATFORM
+// ======================================
+
+function guessPlatform(value) {
+
+  let hostname = '';
+
+  try {
+    hostname = new URL(
+      /^https?:\/\//i.test(value)
+        ? value
+        : 'https://' + value
+    ).hostname.toLowerCase();
+  } catch {
+    return;
+  }
+
+  const map = {
+    linkedin: 'linkedin',
+    glints: 'glints',
+    jobstreet: 'jobstreet',
+    kalibrr: 'kalibrr'
+  };
+
+  const key = Object.keys(map).find(
+    name => hostname.includes(name)
+  );
+
+  const desired = key
+    ? map[key]
+    : 'lainnya';
+
+  const option = (OPT['Platform'] || []).find(
+    value => value.toLowerCase() === desired
+  );
+
+  if (option) {
+    $('#Platform').value = option;
+  }
 }
+
+$('#Link').addEventListener('change', event => {
+  guessPlatform(event.target.value);
+});
+
+
+// ======================================
+// INITIALIZATION
+// ======================================
 
 async function init() {
-  $('#Tanggal').value = new Date().toISOString().slice(0, 10);
-  const p = new URLSearchParams(location.search);
-  const shared = p.get('url') || (p.get('text') || '').match(/https?:\/\/\S+/)?.[0] || '';
+
+  $('#Tanggal').value = localDate();
+
+  // Mendukung data yang dibagikan melalui URL
+  const params = new URLSearchParams(location.search);
+
+  const shared =
+    params.get('url') ||
+    (params.get('text') || '').match(/https?:\/\/\S+/)?.[0] ||
+    '';
+
   $('#Link').value = shared;
+
   try {
-    OPT = (await api('options')).options;
-    ['Platform', 'Job Type', 'Interest In Role', 'Status'].forEach(k => fill($('#' + CSS.escape(k)), OPT[k] || [], k === 'Platform' ? '' : '—'));
-    fill($('#fs'), OPT['Status'] || [], 'Semua status');
-    const st = (OPT['Status'] || []).find(x => /belum daftar/i.test(x)); if (st) $('#Status').value = st;
-    if (shared) guessPlatform(shared);
-  } catch (e) { toast(e.message); }
+
+    const response = await api('options');
+
+    OPT = response.options || {};
+
+    // Dropdown form tambah
+    const addFields = [
+      'Platform',
+      'Job Type',
+      'Interest In Role',
+      'Status',
+      'Tahap',
+      'Follow Up Via'
+    ];
+
+    addFields.forEach(key => {
+      fill(
+        $('#' + CSS.escape(key)),
+        OPT[key] || [],
+        '— Pilih —'
+      );
+    });
+
+    // Dropdown filter status
+    fill(
+      $('#fs'),
+      OPT['Status'] || [],
+      'Semua status'
+    );
+
+    // Default status: Belum Daftar
+    const defaultStatus = (OPT['Status'] || []).find(
+      value => /belum daftar/i.test(value)
+    );
+
+    if (defaultStatus) {
+      $('#Status').value = defaultStatus;
+    }
+
+    if (shared) {
+      guessPlatform(shared);
+    }
+
+  } catch (error) {
+    toast(error.message);
+  }
 }
-$('#Link').addEventListener('change', e => guessPlatform(e.target.value));
+
+
+// ======================================
+// RESET FORM
+// ======================================
+
+function resetForm() {
+
+  const fields = [
+    'Link',
+    'Perusahaan',
+    'Posisi',
+    'Lokasi',
+    'Salary',
+    'Notes'
+  ];
+
+  fields.forEach(key => {
+    $('#' + CSS.escape(key)).value = '';
+  });
+
+  $('#Tanggal').value = localDate();
+
+  [
+    'Platform',
+    'Job Type',
+    'Interest In Role',
+    'Tahap',
+    'Follow Up Via'
+  ].forEach(key => {
+    $('#' + CSS.escape(key)).value = '';
+  });
+
+  const defaultStatus = (OPT['Status'] || []).find(
+    value => /belum daftar/i.test(value)
+  );
+
+  $('#Status').value = defaultStatus || '';
+}
+
+
+// ======================================
+// ADD APPLICATION
+// ======================================
 
 $('#save').onclick = async () => {
-  const ids = ['Link', 'Perusahaan', 'Posisi', 'Lokasi', 'Tanggal', 'Platform', 'Job Type', 'Interest In Role', 'Status', 'Salary', 'Notes'];
-  const data = {}; ids.forEach(k => data[k] = $('#' + CSS.escape(k)).value.trim());
-  if (!data.Perusahaan && !data.Link) return toast('Isi minimal perusahaan atau link');
-  const b = $('#save'); b.disabled = true; b.textContent = 'Menyimpan...';
+
+  const fields = [
+    'Link',
+    'Perusahaan',
+    'Posisi',
+    'Lokasi',
+    'Tanggal',
+    'Platform',
+    'Job Type',
+    'Interest In Role',
+    'Status',
+    'Salary',
+    'Tahap',
+    'Follow Up Via',
+    'Notes'
+  ];
+
+  const data = {};
+
+  fields.forEach(key => {
+    data[key] = $('#' + CSS.escape(key)).value.trim();
+  });
+
+  if (!data.Perusahaan && !data.Link) {
+    return toast('Isi minimal perusahaan atau link');
+  }
+
+  const button = $('#save');
+
+  button.disabled = true;
+  button.textContent = 'Menyimpan...';
+
   try {
-    let j = await api('add', { data });
-    if (j.duplicate) {
-      if (!confirm(`Link ini sudah ada (${j.company || 'No ' + j.no}). Simpan tetap?`)) return;
-      j = await api('add', { data, force: true });
+
+    let result = await api('add', { data });
+
+    // Peringatan jika link sudah pernah dicatat
+    if (result.duplicate) {
+
+      const confirmed = confirm(
+        `Link ini sudah pernah dicatat (${result.company || 'No ' + result.no}).\n\nApakah tetap ingin menyimpan?`
+      );
+
+      if (!confirmed) return;
+
+      result = await api('add', {
+        data,
+        force: true
+      });
     }
-    toast('Tersimpan di baris ' + j.row);
-    ['Link', 'Perusahaan', 'Posisi', 'Lokasi', 'Salary', 'Notes'].forEach(k => $('#' + CSS.escape(k)).value = '');
+
+    toast('Lamaran berhasil disimpan. No: ' + result.no);
+
+    resetForm();
+
     loaded = false;
-  } catch (e) { toast(e.message); }
-  finally { b.disabled = false; b.textContent = 'Simpan ke spreadsheet'; }
-};
 
-function show(v) {
-  $('#v-add').classList.toggle('hide', v !== 'add'); $('#v-list').classList.toggle('hide', v !== 'list');
-  $('#t-add').classList.toggle('on', v === 'add'); $('#t-list').classList.toggle('on', v === 'list');
-  if (v === 'list' && !loaded) loadList();
-}
-$('#t-add').onclick = () => show('add'); $('#t-list').onclick = () => show('list');
+  } catch (error) {
 
-async function loadList() {
-  $('#items').innerHTML = '<div class="empty">Memuat...</div>';
-  try { ROWS = (await api('list')).rows.reverse(); loaded = true; render(); }
-  catch (e) { $('#items').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
-}
+    toast(error.message);
 
-function fmtDate(s) { return s ? new Date(s + 'T00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; }
+  } finally {
 
-function render() {
-  const q = $('#q').value.toLowerCase(), fs = $('#fs').value;
-  const rows = ROWS.filter(r => (!fs || r.Status === fs) && (`${r.Perusahaan} ${r.Posisi}`).toLowerCase().includes(q));
-  $('#items').innerHTML = rows.length ? rows.map(r => `
-    <div class="item" data-no="${esc(r.No)}">
-      <h3>${esc(r.Perusahaan || '(tanpa nama)')}${r.Posisi ? ' - ' + esc(r.Posisi) : ''}</h3>
-      <div class="meta">${esc(fmtDate(r.Tanggal))} ${r.Platform ? '- ' + esc(r.Platform) : ''} ${r.Lokasi ? '- ' + esc(r.Lokasi) : ''}</div>
-      ${[r.Status, r.Tahap, r['Job Type']].filter(Boolean).map(x => `<span class="chip">${esc(x)}</span>`).join('')}
-      <div class="acts">${r.Link ? `<a href="${esc(/^https?:/i.test(r.Link) ? r.Link : 'https://' + r.Link)}" target="_blank" rel="noopener">Buka link</a>` : ''}<button data-edit>Ubah</button></div>
-      <div class="edit hide"></div>
-    </div>`).join('') : '<div class="empty">Belum ada data yang cocok.</div>';
-}
-$('#q').oninput = render; $('#fs').onchange = render;
-
-$('#items').onclick = async e => {
-  const card = e.target.closest('.item'); if (!card) return;
-  const r = ROWS.find(x => String(x.No) === card.dataset.no), box = card.querySelector('.edit');
-  if (e.target.matches('[data-edit]')) {
-    if (!box.classList.toggle('hide')) {
-      const sel = (k, l) => `<label>${l}</label><select data-k="${k}">${['', ...(OPT[k] || [])].map(o => `<option ${o === r[k] ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
-      box.innerHTML = sel('Status', 'Status') + sel('Tahap', 'Tahap') + sel('Follow Up Via', 'Follow up via') +
-        `<label><input type="checkbox" data-k="Checklist" style="width:auto" ${r.Checklist === true ? 'checked' : ''}> Checklist</label>
-         <label>Notes</label><textarea data-k="Notes" rows="2">${esc(r.Notes)}</textarea>
-         <button class="btn" data-save>Simpan perubahan</button>`;
-    }
-  } else if (e.target.matches('[data-save]')) {
-    const data = {};
-    box.querySelectorAll('[data-k]').forEach(el => data[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value);
-    e.target.disabled = true;
-    try { await api('update', { no: r.No, data }); Object.assign(r, data); toast('Perubahan tersimpan'); render(); }
-    catch (err) { toast(err.message); e.target.disabled = false; }
+    button.disabled = false;
+    button.textContent = 'Simpan ke spreadsheet';
   }
 };
 
+
+// ======================================
+// NAVIGATION
+// ======================================
+
+function show(view) {
+
+  $('#v-add').classList.toggle(
+    'hide',
+    view !== 'add'
+  );
+
+  $('#v-list').classList.toggle(
+    'hide',
+    view !== 'list'
+  );
+
+  $('#t-add').classList.toggle(
+    'on',
+    view === 'add'
+  );
+
+  $('#t-list').classList.toggle(
+    'on',
+    view === 'list'
+  );
+
+  if (view === 'list' && !loaded) {
+    loadList();
+  }
+}
+
+$('#t-add').onclick = () => show('add');
+$('#t-list').onclick = () => show('list');
+
+
+// ======================================
+// LOAD APPLICATION LIST
+// ======================================
+
+async function loadList() {
+
+  $('#items').innerHTML =
+    '<div class="empty">Memuat data...</div>';
+
+  try {
+
+    const response = await api('list');
+
+    ROWS = (response.rows || []).reverse();
+
+    loaded = true;
+
+    render();
+
+  } catch (error) {
+
+    $('#items').innerHTML =
+      `<div class="empty">${esc(error.message)}</div>`;
+  }
+}
+
+
+// ======================================
+// RENDER APPLICATION LIST
+// ======================================
+
+function render() {
+
+  const query = $('#q').value.toLowerCase().trim();
+  const status = $('#fs').value;
+
+  const filtered = ROWS.filter(row => {
+
+    const matchesStatus =
+      !status || row.Status === status;
+
+    const searchable = [
+      row.Perusahaan,
+      row.Posisi,
+      row.Lokasi
+    ].join(' ').toLowerCase();
+
+    const matchesSearch =
+      searchable.includes(query);
+
+    return matchesStatus && matchesSearch;
+  });
+
+  $('#items').innerHTML = filtered.length
+
+    ? filtered.map(row => {
+
+        const url = safeUrl(row.Link);
+
+        const chips = [
+          row.Status,
+          row.Tahap,
+          row['Job Type']
+        ].filter(Boolean);
+
+        return `
+          <div class="item" data-no="${esc(row.No)}">
+
+            <h3>
+              ${esc(row.Perusahaan || '(tanpa nama)')}
+              ${row.Posisi ? ' - ' + esc(row.Posisi) : ''}
+            </h3>
+
+            <div class="meta">
+              ${esc(formatDate(row.Tanggal))}
+              ${row.Platform ? ' · ' + esc(row.Platform) : ''}
+              ${row.Lokasi ? ' · ' + esc(row.Lokasi) : ''}
+            </div>
+
+            ${chips.map(value =>
+              `<span class="chip">${esc(value)}</span>`
+            ).join('')}
+
+            ${row.Salary !== '' && row.Salary != null
+              ? `<div class="meta">Salary: ${esc(Number(row.Salary).toLocaleString('id-ID'))}</div>`
+              : ''
+            }
+
+            <div class="acts">
+
+              ${url
+                ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">Buka link</a>`
+                : ''
+              }
+
+              <button type="button" data-edit>Ubah</button>
+
+            </div>
+
+            <div class="edit hide"></div>
+
+          </div>
+        `;
+
+      }).join('')
+
+    : '<div class="empty">Belum ada data yang cocok.</div>';
+}
+
+$('#q').oninput = render;
+$('#fs').onchange = render;
+
+
+// ======================================
+// EDIT APPLICATION
+// ======================================
+
+function editSelect(key, label, currentValue) {
+
+  const options = [
+    '',
+    ...(OPT[key] || [])
+  ];
+
+  return `
+    <label>${esc(label)}</label>
+
+    <select data-k="${esc(key)}">
+
+      ${options.map(option => `
+        <option
+          value="${esc(option)}"
+          ${String(option) === String(currentValue ?? '') ? 'selected' : ''}
+        >
+          ${option ? esc(option) : '— Pilih —'}
+        </option>
+      `).join('')}
+
+    </select>
+  `;
+}
+
+
+$('#items').onclick = async event => {
+
+  const card = event.target.closest('.item');
+
+  if (!card) return;
+
+  const row = ROWS.find(
+    item => String(item.No) === card.dataset.no
+  );
+
+  if (!row) return;
+
+  const box = card.querySelector('.edit');
+
+
+  // TOMBOL UBAH
+  if (event.target.matches('[data-edit]')) {
+
+    const isOpening = box.classList.contains('hide');
+
+    box.classList.toggle('hide');
+
+    if (!isOpening) return;
+
+    box.innerHTML = `
+
+      ${editSelect(
+        'Interest In Role',
+        'Interest In Role',
+        row['Interest In Role']
+      )}
+
+      ${editSelect(
+        'Status',
+        'Status',
+        row.Status
+      )}
+
+      <label>Salary</label>
+
+      <input
+        type="number"
+        inputmode="numeric"
+        data-k="Salary"
+        value="${esc(row.Salary ?? '')}"
+        placeholder="Contoh: 5000000"
+      >
+
+      ${editSelect(
+        'Tahap',
+        'Tahap',
+        row.Tahap
+      )}
+
+      ${editSelect(
+        'Follow Up Via',
+        'Follow Up Via',
+        row['Follow Up Via']
+      )}
+
+      <div class="check-row">
+
+        <input
+          type="checkbox"
+          id="check-${esc(row.No)}"
+          data-k="Checklist"
+          ${row.Checklist === true ? 'checked' : ''}
+        >
+
+        <label for="check-${esc(row.No)}">
+          Checklist
+        </label>
+
+      </div>
+
+      <label>Notes</label>
+
+      <textarea data-k="Notes" rows="2">${esc(row.Notes || '')}</textarea>
+
+      <button class="btn" type="button" data-save>
+        Simpan perubahan
+      </button>
+    `;
+
+    return;
+  }
+
+
+  // TOMBOL SIMPAN PERUBAHAN
+  if (event.target.matches('[data-save]')) {
+
+    const button = event.target;
+
+    const data = {};
+
+    box.querySelectorAll('[data-k]').forEach(element => {
+
+      const key = element.dataset.k;
+
+      data[key] = element.type === 'checkbox'
+        ? element.checked
+        : element.value;
+    });
+
+    button.disabled = true;
+    button.textContent = 'Menyimpan...';
+
+    try {
+
+      await api('update', {
+        no: row.No,
+        data
+      });
+
+      Object.assign(row, data);
+
+      toast('Perubahan berhasil disimpan');
+
+      render();
+
+    } catch (error) {
+
+      toast(error.message);
+
+      button.disabled = false;
+      button.textContent = 'Simpan perubahan';
+    }
+  }
+};
+
+
+// ======================================
+// START APPLICATION
+// ======================================
+
 init();
+
 </script>
+
 </body>
 </html>
