@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Job Tracker</title>
+<style>
+:root{--bg:#eef1ee;--card:#fff;--ink:#1c2a29;--mute:#667572;--line:#d5ddd9;--acc:#0e6b62;--accInk:#fff;--warn:#b4492b}
+@media(prefers-color-scheme:dark){:root{--bg:#121918;--card:#1b2524;--ink:#e6eeeb;--mute:#93a39f;--line:#2e3b39;--acc:#46b3a6;--accInk:#08201d;--warn:#e8876a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom))}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:1.35rem;margin:4px 0 14px}
+label{display:block;font-size:.85rem;color:var(--mute);margin:12px 0 4px}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:0;border-radius:8px;padding:12px 16px;background:var(--acc);color:var(--accInk);font-weight:600;width:100%;margin-top:18px}
+.btn.ghost{background:transparent;color:var(--acc);border:1px solid var(--acc);margin-top:8px}
+.btn:disabled{opacity:.5}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;padding:14px;background:none;border:0;color:var(--mute);font-weight:600}
+nav button.on{color:var(--acc);box-shadow:inset 0 2px var(--acc)}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.item h3{margin:0;font-size:1rem}
+.meta{color:var(--mute);font-size:.85rem}
+.chip{display:inline-block;font-size:.78rem;padding:2px 9px;border:1px solid var(--line);border-radius:99px;margin:6px 6px 0 0}
+.acts{display:flex;gap:14px;margin-top:8px}
+.acts a,.acts button{background:none;border:0;padding:0;color:var(--acc);font-size:.9rem;text-decoration:underline}
+.edit{border-top:1px dashed var(--line);margin-top:10px;padding-top:2px}
+#msg{position:fixed;left:16px;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);padding:11px 14px;border-radius:8px;display:none;max-width:608px;margin:auto}
+.empty{text-align:center;color:var(--mute);padding:40px 0}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<section id="v-add">
+  <h1>Catat lowongan</h1>
+  <label>Link</label><input id="Link" type="url" inputmode="url" placeholder="https://...">
+  <div class="row"><div><label>Perusahaan</label><input id="Perusahaan"></div><div><label>Posisi</label><input id="Posisi"></div></div>
+  <div class="row"><div><label>Lokasi</label><input id="Lokasi"></div><div><label>Tanggal</label><input id="Tanggal" type="date"></div></div>
+  <div class="row"><div><label>Platform</label><select id="Platform"></select></div><div><label>Job Type</label><select id="Job Type"></select></div></div>
+  <div class="row"><div><label>Interest In Role</label><select id="Interest In Role"></select></div><div><label>Status</label><select id="Status"></select></div></div>
+  <label>Salary (angka, opsional)</label><input id="Salary" type="number" inputmode="numeric">
+  <label>Notes</label><textarea id="Notes" rows="2"></textarea>
+  <button class="btn" id="save">Simpan ke spreadsheet</button>
+</section>
+
+<section id="v-list" class="hide">
+  <h1>Daftar lamaran</h1>
+  <div class="row"><input id="q" type="search" placeholder="Cari perusahaan atau posisi"><select id="fs"></select></div>
+  <div id="items" style="margin-top:14px"></div>
+</section>
+</main>
+<div id="msg"></div>
+<nav><button id="t-add" class="on">Tambah</button><button id="t-list">Daftar</button></nav>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let PIN = localStorage.getItem('pin') || '', OPT = {}, ROWS = [], loaded = false;
+
+function toast(t) { const m = $('#msg'); m.textContent = t; m.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(() => m.style.display = 'none', 3500); }
+
+async function api(action, extra = {}) {
+  const r = await fetch('/api/sheet', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-pin': PIN }, body: JSON.stringify({ action, ...extra }) });
+  if (r.status === 401) {
+    PIN = prompt('Masukkan PIN') || '';
+    if (!PIN) throw new Error('PIN diperlukan');
+    localStorage.setItem('pin', PIN);
+    return api(action, extra);
+  }
+  const j = await r.json();
+  if (!j.ok && !j.duplicate) throw new Error(j.error || 'Terjadi kesalahan');
+  return j;
+}
+
+function fill(el, list, blank) {
+  el.innerHTML = (blank ? '<option value="">' + blank + '</option>' : '') + list.map(x => `<option>${esc(x)}</option>`).join('');
+}
+
+function guessPlatform(url) {
+  const map = { linkedin: 'linkedin', glints: 'glints', jobstreet: 'jobstreet', kalibrr: 'kalibrr', talentics: 'talentics', instagram: 'intagram' };
+  const host = (url.match(/^https?:\/\/([^/]+)/i) || [])[1] || '';
+  const key = Object.keys(map).find(k => host.includes(k));
+  const want = key ? map[key] : 'web perusahaan';
+  const opt = (OPT['Platform'] || []).find(o => o.toLowerCase().includes(want));
+  if (opt) $('#Platform').value = opt;
+}
+
+async function init() {
+  $('#Tanggal').value = new Date().toISOString().slice(0, 10);
+  const p = new URLSearchParams(location.search);
+  const shared = p.get('url') || (p.get('text') || '').match(/https?:\/\/\S+/)?.[0] || '';
+  $('#Link').value = shared;
+  try {
+    OPT = (await api('options')).options;
+    ['Platform', 'Job Type', 'Interest In Role', 'Status'].forEach(k => fill($('#' + CSS.escape(k)), OPT[k] || [], k === 'Platform' ? '' : '—'));
+    fill($('#fs'), OPT['Status'] || [], 'Semua status');
+    const st = (OPT['Status'] || []).find(x => /belum daftar/i.test(x)); if (st) $('#Status').value = st;
+    if (shared) guessPlatform(shared);
+  } catch (e) { toast(e.message); }
+}
+$('#Link').addEventListener('change', e => guessPlatform(e.target.value));
+
+$('#save').onclick = async () => {
+  const ids = ['Link', 'Perusahaan', 'Posisi', 'Lokasi', 'Tanggal', 'Platform', 'Job Type', 'Interest In Role', 'Status', 'Salary', 'Notes'];
+  const data = {}; ids.forEach(k => data[k] = $('#' + CSS.escape(k)).value.trim());
+  if (!data.Perusahaan && !data.Link) return toast('Isi minimal perusahaan atau link');
+  const b = $('#save'); b.disabled = true; b.textContent = 'Menyimpan...';
+  try {
+    let j = await api('add', { data });
+    if (j.duplicate) {
+      if (!confirm(`Link ini sudah ada (${j.company || 'No ' + j.no}). Simpan tetap?`)) return;
+      j = await api('add', { data, force: true });
+    }
+    toast('Tersimpan di baris ' + j.row);
+    ['Link', 'Perusahaan', 'Posisi', 'Lokasi', 'Salary', 'Notes'].forEach(k => $('#' + CSS.escape(k)).value = '');
+    loaded = false;
+  } catch (e) { toast(e.message); }
+  finally { b.disabled = false; b.textContent = 'Simpan ke spreadsheet'; }
+};
+
+function show(v) {
+  $('#v-add').classList.toggle('hide', v !== 'add'); $('#v-list').classList.toggle('hide', v !== 'list');
+  $('#t-add').classList.toggle('on', v === 'add'); $('#t-list').classList.toggle('on', v === 'list');
+  if (v === 'list' && !loaded) loadList();
+}
+$('#t-add').onclick = () => show('add'); $('#t-list').onclick = () => show('list');
+
+async function loadList() {
+  $('#items').innerHTML = '<div class="empty">Memuat...</div>';
+  try { ROWS = (await api('list')).rows.reverse(); loaded = true; render(); }
+  catch (e) { $('#items').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+
+function fmtDate(s) { return s ? new Date(s + 'T00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; }
+
+function render() {
+  const q = $('#q').value.toLowerCase(), fs = $('#fs').value;
+  const rows = ROWS.filter(r => (!fs || r.Status === fs) && (`${r.Perusahaan} ${r.Posisi}`).toLowerCase().includes(q));
+  $('#items').innerHTML = rows.length ? rows.map(r => `
+    <div class="item" data-no="${esc(r.No)}">
+      <h3>${esc(r.Perusahaan || '(tanpa nama)')}${r.Posisi ? ' - ' + esc(r.Posisi) : ''}</h3>
+      <div class="meta">${esc(fmtDate(r.Tanggal))} ${r.Platform ? '- ' + esc(r.Platform) : ''} ${r.Lokasi ? '- ' + esc(r.Lokasi) : ''}</div>
+      ${[r.Status, r.Tahap, r['Job Type']].filter(Boolean).map(x => `<span class="chip">${esc(x)}</span>`).join('')}
+      <div class="acts">${r.Link ? `<a href="${esc(/^https?:/i.test(r.Link) ? r.Link : 'https://' + r.Link)}" target="_blank" rel="noopener">Buka link</a>` : ''}<button data-edit>Ubah</button></div>
+      <div class="edit hide"></div>
+    </div>`).join('') : '<div class="empty">Belum ada data yang cocok.</div>';
+}
+$('#q').oninput = render; $('#fs').onchange = render;
+
+$('#items').onclick = async e => {
+  const card = e.target.closest('.item'); if (!card) return;
+  const r = ROWS.find(x => String(x.No) === card.dataset.no), box = card.querySelector('.edit');
+  if (e.target.matches('[data-edit]')) {
+    if (!box.classList.toggle('hide')) {
+      const sel = (k, l) => `<label>${l}</label><select data-k="${k}">${['', ...(OPT[k] || [])].map(o => `<option ${o === r[k] ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+      box.innerHTML = sel('Status', 'Status') + sel('Tahap', 'Tahap') + sel('Follow Up Via', 'Follow up via') +
+        `<label><input type="checkbox" data-k="Checklist" style="width:auto" ${r.Checklist === true ? 'checked' : ''}> Checklist</label>
+         <label>Notes</label><textarea data-k="Notes" rows="2">${esc(r.Notes)}</textarea>
+         <button class="btn" data-save>Simpan perubahan</button>`;
+    }
+  } else if (e.target.matches('[data-save]')) {
+    const data = {};
+    box.querySelectorAll('[data-k]').forEach(el => data[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value);
+    e.target.disabled = true;
+    try { await api('update', { no: r.No, data }); Object.assign(r, data); toast('Perubahan tersimpan'); render(); }
+    catch (err) { toast(err.message); e.target.disabled = false; }
+  }
+};
+
+init();
+</script>
+</body>
+</html>
